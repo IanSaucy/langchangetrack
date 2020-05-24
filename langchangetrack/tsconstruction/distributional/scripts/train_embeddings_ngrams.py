@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import platform
 import sys
 
 from argparse import ArgumentParser
@@ -11,10 +12,14 @@ from os import path
 from time import time
 import itertools
 
+# from langchangetrack.corpusreaders.plainngramscorpus import PlainNGRAMSCorpus
+# from langchangetrack.tsconstruction.distributional.corpustoembeddings import CorpusToEmbeddings
+
+import logging
+
 from langchangetrack.corpusreaders.plainngramscorpus import PlainNGRAMSCorpus
 from langchangetrack.tsconstruction.distributional.corpustoembeddings import CorpusToEmbeddings
 
-import logging
 logger = logging.getLogger("langchangetrack")
 
 __author__ = "Vivek Kulkarni"
@@ -25,8 +30,10 @@ LOGFORMAT = "%(asctime).19s %(levelname)s %(filename)s: %(lineno)s %(message)s"
 import psutil
 from multiprocessing import cpu_count
 
-p = psutil.Process(os.getpid())
-p.set_cpu_affinity(list(range(cpu_count())))
+# Can only set affinity on Windows and Linux
+if platform.system() != "Darwin":
+    p = psutil.Process(os.getpid())
+    p.cpu_affinity(list(range(cpu_count())))
 
 
 class RepeatCorpusNTimes(object):

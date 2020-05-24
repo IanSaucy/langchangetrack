@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """dump_timeseries.py: Dumps the displacements as a timeseries in a data frame"""
+import platform
 
 from argparse import ArgumentParser
 import logging
@@ -23,8 +24,10 @@ from joblib import Parallel, delayed
 import psutil
 from multiprocessing import cpu_count
 
-p = psutil.Process(os.getpid())
-p.set_cpu_affinity(list(range(cpu_count())))
+# Can only set affinity on Windows and Linux
+if platform.system() != "Darwin":
+    p = psutil.Process(os.getpid())
+    p.cpu_affinity(list(range(cpu_count())))
 
 __author__ = "Vivek Kulkarni"
 __email__ = "viveksck@gmail.com"
@@ -38,9 +41,9 @@ def interpolate(x, xinter, values, finter):
     # Interpolate the function value at those points
     yintervalues = finter(xmissing)
     # Original points and values pairs
-    orig_pairs = zip(x, values)
+    orig_pairs = list(zip(x, values))
     # Interpolated points and values pairs
-    interp_pairs = zip(xmissing, yintervalues)
+    interp_pairs = list(zip(xmissing, yintervalues))
     # Find the final values
     assert(len(orig_pairs) + len(interp_pairs) == len(xinter))
     final_pairs = sorted(orig_pairs + interp_pairs)
@@ -60,14 +63,14 @@ def create_word_time_series(old_df, new_df, w, sourcexinter, destxinter, metric_
         fold = interp1d(sourcex, old_values, bounds_error=False)
         fnew = interp1d(destx, new_values, bounds_error=False)
     except:
-        print "Failed to interpolate", w
+        print("Failed to interpolate", w)
         return None, None
 
     if interpolate:
         final_old_pairs = interpolate(sourcex, sourcexinter, old_values, fold)
         final_new_pairs = interpolate(destx, destxinter, new_values, fnew)
-        xinterold, yinterold = zip(*final_old_pairs)
-        xinternew, yinternew = zip(*final_new_pairs)
+        xinterold, yinterold = list(zip(*final_old_pairs))
+        xinternew, yinternew = list(zip(*final_new_pairs))
     else:
         yinterold = old_values
         yinternew = new_values

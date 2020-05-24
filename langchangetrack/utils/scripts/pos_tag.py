@@ -37,7 +37,7 @@ def main(args):
 
     sorted_pos_tags = sorted(list(tag_set))
     rows = []
-    for w in D.keys():
+    for w in list(D.keys()):
         row = [w]
         pos_counts_word = np.array([float(D[w][t]) for t in sorted_pos_tags])
         pos_dist_word = pos_counts_word / float(np.sum(pos_counts_word))
@@ -46,9 +46,9 @@ def main(args):
         rows.append(row)
 
     header = ['word'] + sorted_pos_tags
-    print "Set of POS tags in sorted order", header
+    print("Set of POS tags in sorted order", header)
     df = pd.DataFrame().from_records(rows, columns=header)
-    print "Dumping the POS distribution."
+    print("Dumping the POS distribution.")
     df.to_csv(args.outputfile, index=None, encoding='utf-8')
 
 

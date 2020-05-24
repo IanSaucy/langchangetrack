@@ -13,17 +13,16 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 requirements = [
     'wheel==0.23.0',
     'argparse>=1.2.1',
-    'numpy>=0.9.1',
-    'scipy>=0.15.1',
+    'numpy>=1.18.4',
+    'scipy>=1.2.3',
     'more_itertools>=2.2',
     'joblib>=0.8.3-r1',
-    'gensim==0.10.3',
+    'gensim==3.8.3',
     'statsmodels>=0.5.0',
-    'changepoint>=0.1.1',
     'nltk>=3.0.0',
     'textblob>=0.9.0',
     'textblob-aptagger>=0.2.0',
-    'psutil>=2.1.1',
+    'psutil>=5.0.0',
 ]
 
 test_requirements = [
@@ -32,7 +31,7 @@ test_requirements = [
 
 setup(
     name='langchangetrack',
-    version='0.1.0',
+    version='0.2.0',
     description='Package for statistically significant language change.',
     long_description=readme + '\n\n' + history,
     author='Vivek Kulkarni',

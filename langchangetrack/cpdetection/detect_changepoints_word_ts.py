@@ -1,3 +1,5 @@
+import platform
+
 from argparse import ArgumentParser
 import logging
 import pandas as pd
@@ -16,8 +18,10 @@ __email__ = "viveksck@gmail.com"
 import psutil
 from multiprocessing import cpu_count
 
-p = psutil.Process(os.getpid())
-p.set_cpu_affinity(list(range(cpu_count())))
+# Can only set affinity on Windows and Linux
+if platform.system() != "Darwin":
+    p = psutil.Process(os.getpid())
+    p.cpu_affinity(list(range(cpu_count())))
 
 # Global variable specifying which column index the time series
 # begins in a dataframe
@@ -145,14 +149,14 @@ def main(args):
 
     workers = args.workers
 
-    print "Config:"
-    print "Input data frame file name:", df_f
-    print "Vocab file", common_vocab_file
-    print "Output pvalue file", pval_file
-    print "Output sample file", sample_file
-    print "Columns to drop", col_to_drop
-    print "Normalize Time series:", should_normalize
-    print "Threshold", threshold
+    print("Config:")
+    print("Input data frame file name:", df_f)
+    print("Vocab file", common_vocab_file)
+    print("Output pvalue file", pval_file)
+    print("Output sample file", sample_file)
+    print("Columns to drop", col_to_drop)
+    print("Normalize Time series:", should_normalize)
+    print("Threshold", threshold)
 
     # Read the time series data
     df = pd.read_csv(df_f)
@@ -174,16 +178,16 @@ def main(args):
             new_cols = cols[0:2] + time_points[::-1]
             norm_df = norm_df[new_cols]
         norm_df.drop(col_to_drop, axis=1, inplace=True)
-        print "Dropped column", col_to_drop
+        print("Dropped column", col_to_drop)
 
-    print "Columns of the data frame are", norm_df.columns
+    print("Columns of the data frame are", norm_df.columns)
     cwords = norm_df.word.values
-    print "Number of words we are analyzing:", len(cwords)
+    print("Number of words we are analyzing:", len(cwords))
 
     chunksz = np.ceil(len(cwords) / float(workers))
     results = parallelize_func(cwords[:], get_pval_word_chunk, chunksz=chunksz, n_jobs=workers, df=norm_df, B=args.B)
 
-    pvals, num_samples = zip(*results)
+    pvals, num_samples = list(zip(*results))
 
     header = ['word'] + list(norm_df.columns[TS_OFFSET:len(pvals[0]) + 1])
     pvalue_df = pd.DataFrame().from_records(list(pvals), columns=header)
@@ -191,8 +195,8 @@ def main(args):
     # Append additonal columns to the final df
     pvalue_df_final = pvalue_df.copy(deep=True)
 
-    pvalue_df_final['min_pval'], pvalue_df_final['cp'] = zip(*pvalue_df.apply(get_minpval_cp, axis=1))
-    pvalue_df_final['tpval'], pvalue_df_final['tcp'] = zip(*pvalue_df.apply(get_cp_pval, axis=1, zscore_df=norm_df, threshold=threshold))
+    pvalue_df_final['min_pval'], pvalue_df_final['cp'] = list(zip(*pvalue_df.apply(get_minpval_cp, axis=1)))
+    pvalue_df_final['tpval'], pvalue_df_final['tcp'] = list(zip(*pvalue_df.apply(get_cp_pval, axis=1, zscore_df=norm_df, threshold=threshold)))
 
     pvalue_df_final.drop(norm_df.columns[TS_OFFSET:len(pvals[0]) + 1], axis=1, inplace = True)
 

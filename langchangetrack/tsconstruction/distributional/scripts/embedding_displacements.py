@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import platform
 
 from argparse import ArgumentParser
 
 import os
 from os import path
-import cPickle as pickle
+import pickle as pickle
 import numpy as np
 import scipy
 import itertools
@@ -27,8 +28,10 @@ logger = logging.getLogger("langchangetrack")
 import psutil
 from multiprocessing import cpu_count
 
-p = psutil.Process(os.getpid())
-p.set_cpu_affinity(list(range(cpu_count())))
+# Can only set affinity on Windows and Linux
+if platform.system() != "Darwin":
+    p = psutil.Process(os.getpid())
+    p.cpu_affinity(list(range(cpu_count())))
 
 
 def uniform(distances):
@@ -45,12 +48,15 @@ def get_vectors_sg(model, norm_embedding=True):
 
 def load_model_skipgram(model_path):
     """ Load the skipgram model from a file in word2vec format. """
-    return gensim.models.Word2Vec.load_word2vec_format(model_path)
+    return gensim.models.KeyedVectors.load_word2vec_format(model_path)
+    # TODO remove this line
+    # return gensim.models.Word2Vec.load_word2vec_format(model_path)
 
 
 def load_predictor_skipgram(predictor_path):
     """ Load the predictor model. """
-    return pickle.load(open(predictor_path))
+    print(predictor_path)
+    return pickle.load(open(predictor_path, mode='rb'))
 
 
 class EmbeddingsDisplacements(Displacements):
@@ -109,8 +115,8 @@ class EmbeddingsDisplacements(Displacements):
             self.predictors[timepoint] = self.load_predictor(predictor_handles[i])
             if hasattr(self.predictors[timepoint], 'weight_func'):
                 self.predictors[timepoint].weight_func = uniform
-                print "Loaded predictor for", timepoint
-        print "Done loading predictors"
+                print("Loaded predictor for", timepoint)
+        print("Done loading predictors")
 
     def is_present(self, timepoint, word):
         """ Check if the word is present in the vocabulary at this timepoint. """
@@ -120,7 +126,10 @@ class EmbeddingsDisplacements(Displacements):
     def get_vector(self, timepoint, word):
         """ Get the embedding for this word at the specified timepoint."""
         model = self.get_model(timepoint)
-        return self.get_vectors(model, self.norm_embedding)[model.vocab[word].index]
+        elm = self.get_vectors(model, self.norm_embedding)
+        print(elm)
+        elm = elm[model.vocab[word].index]
+        return elm
 
 
 def main(args):

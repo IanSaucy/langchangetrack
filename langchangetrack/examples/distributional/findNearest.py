@@ -18,16 +18,16 @@ def main(args):
 
 def process(filename):
     m = gensim.models.Word2Vec.load_word2vec_format(filename)
-    print "query (ctrl-c to quit): ",
+    print("query (ctrl-c to quit): ", end=' ')
     line = sys.stdin.readline()
     while line:
         word = line.rstrip()
-        print word
+        print(word)
         tuples  = m.most_similar(word, topn=10)
         for w, s in tuples:
-            print w, s
-        print "----------------------------------"
-        print "query (ctrl-c to quit): ",
+            print(w, s)
+        print("----------------------------------")
+        print("query (ctrl-c to quit): ", end=' ')
         line = sys.stdin.readline()
 
 if __name__ == "__main__":

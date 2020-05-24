@@ -55,8 +55,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'langchangetrack'
-copyright = u'2015, Vivek Kulkarni'
+project = 'langchangetrack'
+copyright = '2015, Vivek Kulkarni'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -209,8 +209,8 @@ latex_elements = {
 # [howto/manual]).
 latex_documents = [
     ('index', 'langchangetrack.tex',
-     u'langchangetrack Documentation',
-     u'Vivek Kulkarni', 'manual'),
+     'langchangetrack Documentation',
+     'Vivek Kulkarni', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at
@@ -240,8 +240,8 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'langchangetrack',
-     u'langchangetrack Documentation',
-     [u'Vivek Kulkarni'], 1)
+     'langchangetrack Documentation',
+     ['Vivek Kulkarni'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -255,8 +255,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'langchangetrack',
-     u'langchangetrack Documentation',
-     u'Vivek Kulkarni',
+     'langchangetrack Documentation',
+     'Vivek Kulkarni',
      'langchangetrack',
      'One line description of project.',
      'Miscellaneous'),

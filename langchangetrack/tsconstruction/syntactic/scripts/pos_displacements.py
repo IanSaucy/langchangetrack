@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import platform
 
 from argparse import ArgumentParser
 
 import os
 from os import path
-import cPickle as pickle
+import pickle as pickle
 import numpy as np
 import scipy
 import itertools
@@ -28,8 +29,10 @@ logger = logging.getLogger("langchangetrack")
 import psutil
 from multiprocessing import cpu_count
 
-p = psutil.Process(os.getpid())
-p.set_cpu_affinity(list(range(cpu_count())))
+# Can only set affinity on Windows and Linux
+if platform.system() != "Darwin":
+    p = psutil.Process(os.getpid())
+    p.cpu_affinity(list(range(cpu_count())))
 
 def get_vectors_pos(model, norm_embedding=True):
     return model
@@ -99,7 +102,7 @@ class POSDisplacements(Displacements):
         for i, timepoint in enumerate(self.timepoints):
             self.models[timepoint] = loaded_models[i]
             self.predictors[timepoint] = self.load_predictor(predictor_handles[i])
-        print "Done loading predictors"
+        print("Done loading predictors")
 
     def is_present(self, timepoint, word):
         """ Check if the word is present in the vocabulary at this timepoint. """ 

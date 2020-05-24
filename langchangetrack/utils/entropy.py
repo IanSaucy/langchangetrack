@@ -5,7 +5,7 @@
 
 Algorithms on entropies.
 """
-from itertools import izip
+
 import numpy as np
 import scipy as sp
 import math
@@ -42,7 +42,7 @@ def shannon_entropy(freq, unit='bit'):
     freq = np.atleast_2d(freq)
     # get fancy indexing
     positives = freq != 0.
-    for i, (freq, idx) in enumerate(izip(freq, positives)):
+    for i, (freq, idx) in enumerate(zip(freq, positives)):
         freq = freq[idx]  # keep only non-zero
         logs = [math.log(f, 2) for f in freq]  # logarithms of non-zero frequencies
         Hs[i] = -np.sum(freq * logs)
@@ -72,7 +72,7 @@ def relative_entropy(freq, background, unit='bit'):
     freq = np.atleast_2d(freq)
     Dkls = np.ndarray(freq.size / shape[-1])
     positives = (freq != 0.) & (background != 0.)
-    for i, (freq, idx) in enumerate(izip(freq, positives)):
+    for i, (freq, idx) in enumerate(zip(freq, positives)):
         freq = freq[idx]
         bg = background[idx]
         logs = log(freq / bg)

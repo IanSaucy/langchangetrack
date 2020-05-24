@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import platform
 
 from argparse import ArgumentParser
 
 import os
 from os import path
-import cPickle as pickle
+import pickle as pickle
 import numpy as np
 import scipy
 import itertools
@@ -24,8 +25,10 @@ logger = logging.getLogger("langchangetrack")
 import psutil
 from multiprocessing import cpu_count
 
-p = psutil.Process(os.getpid())
-p.set_cpu_affinity(list(range(cpu_count())))
+# Can only set affinity on Windows and Linux
+if platform.system() != "Darwin":
+    p = psutil.Process(os.getpid())
+    p.cpu_affinity(list(range(cpu_count())))
 
 def normalize_vector(vec):
     """ Normalize a vector by its L2 norm. """
@@ -37,7 +40,7 @@ def pairwise(iterable):
     """ [a,b,c,d]=>[(a,b), (b,c), (c, d)] """
     a, b = itertools.tee(iterable)
     next(b, None)
-    return itertools.izip(a, b)
+    return zip(a, b)
 
 
 def process_word_source(w, eobj):
@@ -56,7 +59,7 @@ def process_chunk(chunk, func, *args):
     for i, e in enumerate(chunk):
         L.append(func(e, *args))
         if i % 10 == 0:
-            print "Processing chunk", i
+            print("Processing chunk", i)
     return L
 
 
@@ -90,7 +93,7 @@ class Displacements(object):
         if words_list[-1] == '':
             words_list = words_list[:-1]
         if self.num_words != -1:
-            return words_list[:num_words]
+            return words_list[:self.num_words]
         else:
             return words_list
 
@@ -113,6 +116,8 @@ class Displacements(object):
                 timepoint2 = tup[3]
 
                 if self.is_present(timepoint1, word1) and self.is_present(timepoint2, word2):
+                    print(timepoint1, word1)
+                    print(timepoint2, word2)
                     vec1 = self.get_vector(timepoint1, word1)
                     vec2 = self.get_vector(timepoint2, word2)
 
@@ -148,14 +153,14 @@ class Displacements(object):
         # Create the tuples for calculating displacements based on strategy
         # used.
         if self.method == "polar":
-            timepoints1 = zip(timepoints_considered, list(itertools.repeat(timepoints_considered[0], len(timepoints_considered))))
-            timepoints2 = zip(timepoints_considered, list(itertools.repeat(timepoints_considered[-1], len(timepoints_considered))))
+            timepoints1 = list(zip(timepoints_considered, list(itertools.repeat(timepoints_considered[0], len(timepoints_considered)))))
+            timepoints2 = list(zip(timepoints_considered, list(itertools.repeat(timepoints_considered[-1], len(timepoints_considered)))))
         elif self.method == 'win':
-            timepoints1 = zip(timepoints_considered[win_size:], timepoints_considered[:-win_size])
-            timepoints2 = zip(timepoints_considered[:-win_size], timepoints_considered[win_size:])
+            timepoints1 = list(zip(timepoints_considered[self.win_size:], timepoints_considered[:-self.win_size]))
+            timepoints2 = list(zip(timepoints_considered[:-self.win_size], timepoints_considered[self.win_size:]))
         elif self.method == 'fixed':
-            timepoints1 = zip(timepoints_considered, list(itertools.repeat(fixed_point, len(timepoints_considered))))
-            timepoints2 = zip(timepoints_considered, list(itertools.repeat(timepoints_considered[-1], len(timepoints_considered))))
+            timepoints1 = list(zip(timepoints_considered, list(itertools.repeat(self.fixed_point, len(timepoints_considered)))))
+            timepoints2 = list(zip(timepoints_considered, list(itertools.repeat(timepoints_considered[-1], len(timepoints_considered)))))
 
         # Return the list if tuples
         return timepoints1, timepoints2
@@ -172,7 +177,7 @@ class Displacements(object):
 
         words = self.get_word_list()
         # Create chunks of the words to be processed.
-        chunk_sz = np.ceil(len(words)/float(n_jobs))
+        chunk_sz = int(np.ceil(len(words)/float(n_jobs)))
         chunks = list(more_itertools.chunked(words, chunk_sz))
 
         # Calculate the displacements
@@ -208,19 +213,19 @@ class Displacements(object):
 
     def number_distance_metrics(self):
         """ The number of distance metrics evaluated by calculate_distance.  """
-        raise NotImplementedError, "Pure virtual function"
+        raise NotImplementedError("Pure virtual function")
 
     def calculate_distance(self, vec1, vec2):
         """ Calculate distances between vector1 and vector2. """
-        raise NotImplementedError, "Pure virtual function"
+        raise NotImplementedError("Pure virtual function")
 
     def load_models_and_predictors(self):
-        raise NotImplementedError, "Pure virtual function"
+        raise NotImplementedError("Pure virtual function")
 
     def is_present(self, timepoint, word):
         """ Check if the word is present in the vocabulary at this timepoint. """
-        raise NotImplementedError, "Pure virtual function"
+        raise NotImplementedError("Pure virtual function")
 
     def get_vector(self, timepoint, word):
         """ Get the embedding for this word at the specified timepoint."""
-        raise NotImplementedError, "Pure virtual function"
+        raise NotImplementedError("Pure virtual function")

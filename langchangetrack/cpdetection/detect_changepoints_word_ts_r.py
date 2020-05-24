@@ -1,3 +1,5 @@
+import platform
+
 from argparse import ArgumentParser
 
 import logging
@@ -15,8 +17,10 @@ from changepoint.rchangepoint import estimate_cp_pval, estimate_cp
 import psutil
 from multiprocessing import cpu_count
 
-p = psutil.Process(os.getpid())
-p.set_cpu_affinity(list(range(cpu_count())))
+# Can only set affinity on Windows and Linux
+if platform.system() != "Darwin":
+    p = psutil.Process(os.getpid())
+    p.cpu_affinity(list(range(cpu_count())))
 
 __author__ = "Vivek Kulkarni"
 __email__ = "viveksck@gmail.com"
@@ -113,13 +117,13 @@ def main(args):
     else:
         threshold = None
 
-    print "CONFIG:"
-    print "FILENAME:", df_f
-    print "VOCAB FILE:", common_vocab_file
-    print "PVAL_FILE:", pval_file
-    print "COL TO DROP:", col_to_drop
-    print "NORMALIZE:", should_normalize
-    print "Threshold", threshold
+    print("CONFIG:")
+    print("FILENAME:", df_f)
+    print("VOCAB FILE:", common_vocab_file)
+    print("PVAL_FILE:", pval_file)
+    print("COL TO DROP:", col_to_drop)
+    print("NORMALIZE:", should_normalize)
+    print("Threshold", threshold)
 
     # Read the time series data
     df = pd.read_csv(df_f)
@@ -139,22 +143,22 @@ def main(args):
             time_points = cols[2:]
             new_cols = cols[0:2] + time_points[::-1]
             norm_df = norm_df[new_cols]
-            print norm_df.columns  
+            print(norm_df.columns)  
         norm_df.drop(col_to_drop, axis = 1, inplace=True)
         
-    print "Columns of the time series", norm_df.columns
+    print("Columns of the time series", norm_df.columns)
     cwords = norm_df.word.values
-    print "Number of words we are processing", len(cwords)
+    print("Number of words we are processing", len(cwords))
 
     chunksz = np.ceil(len(cwords)/float(n_jobs))
     if cp_pval: 
         results = parallelize_func(cwords[:], get_pval_word_chunk, chunksz=chunksz, n_jobs=n_jobs, df = norm_df, threshold = threshold)
-        cps, pvals = zip(*results)
+        cps, pvals = list(zip(*results))
         # R returns 1 for a very high stat significance. So we invert it as for
         # us low pvalues mean more significance.
         pvals = [(1.0 - pval) for pval in pvals]
         actual_cps = [get_actual_cp(norm_df, cp) for cp in cps]
-        results = zip(cwords, actual_cps, pvals)
+        results = list(zip(cwords, actual_cps, pvals))
         header = ['word', 'cp', 'pval']
         pvalue_df = pd.DataFrame().from_records(results, columns=header)
         sdf = pvalue_df.sort(columns=['pval'])
@@ -163,7 +167,7 @@ def main(args):
         results = parallelize_func(cwords[:], get_cp_word_chunk, chunksz=chunksz, n_jobs=n_jobs, df = norm_df)
         cps = results
         actual_cps = [get_actual_cp(norm_df, cp) for cp in cps]
-        results = zip(cwords, actual_cps)
+        results = list(zip(cwords, actual_cps))
         header = ['word', 'cp']
         pvalue_df = pd.DataFrame().from_records(results, columns=header)
         sdf = pvalue_df.sort(columns=['cp'])

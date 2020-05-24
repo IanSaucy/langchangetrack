@@ -1,3 +1,5 @@
+import math
+
 import numpy
 import statsmodels.api as sm
 from sklearn.neighbors import NearestNeighbors
@@ -6,9 +8,15 @@ from statsmodels.sandbox.regression.predstd import wls_prediction_std
 
 import pickle
 
+
+# class FileType(object):
+#     def __init__(self, a):
+#         self.a = a
+
+
 # Code to pickle a VW model
-import copy_reg
-from types import FunctionType, FileType, MethodType
+import copyreg
+from types import FunctionType, MethodType
 
 
 def stub_pickler(obj):
@@ -18,10 +26,10 @@ def stub_pickler(obj):
 def stub_unpickler():
     return "STUB"
 
-copy_reg.pickle(MethodType, stub_pickler, stub_unpickler)
-copy_reg.pickle(FileType,   stub_pickler, stub_unpickler)
-copy_reg.pickle(FunctionType, stub_pickler, stub_unpickler)
 
+copyreg.pickle(MethodType, stub_pickler, stub_unpickler)
+# copyreg.pickle(FileType, stub_pickler, stub_unpickler)
+copyreg.pickle(FunctionType, stub_pickler, stub_unpickler)
 
 '''
     Given a list of numbers, produce a list of weights using the specified kernel
@@ -64,7 +72,7 @@ class LocalLinearRegression(BaseEstimator):
     def __init__(self, k_nn, weight_func=KernelFunctions.uniform):
         self.k_nn = k_nn
         self.weight_func = weight_func
-        print self.k_nn, self.weight_func
+        print(self.k_nn, self.weight_func)
 
     '''
         X: A list of points to transform
@@ -81,7 +89,7 @@ class LocalLinearRegression(BaseEstimator):
         self.Y = numpy.array(Y)
         self.nn = NearestNeighbors(n_neighbors=self.k_nn, algorithm='ball_tree', p=2)
         self.nn.fit(self.X)
-        print "Fit the model"
+        print("Fit the model")
 
     '''
         X: The point to transform based on its neighbors 

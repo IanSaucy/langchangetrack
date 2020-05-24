@@ -67,7 +67,9 @@ class CorpusToEmbeddings(object):
                                             negative=0)
 
         if self.save_model_file:
-            self.model.save_word2vec_format(self.save_model_file)
+            self.model.wv.save_word2vec_format(self.save_model_file)
+            # TODO Remove this line?
+            # self.model.save_word2vec_format(self.save_model_file)
 
     def build(self):
         """ Trains a model on the corpus to obtain embeddings."""
@@ -80,4 +82,6 @@ class CorpusToEmbeddings(object):
     def save_model(self, model_file):
         """ Saves the model file. """
         self.model.save_word2vec_format(model_file)
+        # TODO remove this line?
+        # self.model.save_word2vec_format(model_file)
         return

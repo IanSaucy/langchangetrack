@@ -29,8 +29,8 @@ def main(args):
                 fd[word] += 1
 
     for w, count in fd.most_common():
-        tup = u"{} {}".format(w, count)
-        print tup.encode(encoding)
+        tup = "{} {}".format(w, count)
+        print(tup.encode(encoding))
 
 
 def debug(type_, value, tb):

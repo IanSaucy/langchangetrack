@@ -11,6 +11,7 @@ from os import path
 from time import time
 from glob import glob
 import subprocess
+import gensim
 
 __author__ = "Vivek Kulkarni"
 __email__ = "viveksck@gmail.com"
